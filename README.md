@@ -21,3 +21,9 @@
 ![ProfitabilityConcept2](https://github.com/telegram-profitability/profitability/assets/72651791/33221520-ba09-459d-b9fd-0dc5cca3acd9)
 
 ![ProfitabilityConcept3](https://github.com/telegram-profitability/profitability/assets/72651791/04470676-e26b-494f-a047-b593b01e9d75)
+
+## Подготовка окружения
+
+1. Установите Poetry с помощью [документации](https://python-poetry.org/docs/master/) или [статьи на JetBrains](https://www.jetbrains.com/help/pycharm/poetry.html).
+2. Установите зависимости `poetry install`.
+3. Для установки новых зависимостей используйте `poetry add <package>` для общих зависимостей и `poetry add <package> --group dev` для зависимостей, необходимых при разработке.
