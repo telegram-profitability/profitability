@@ -3,8 +3,6 @@ from abc import abstractmethod
 from datetime import datetime
 from datetime import timezone
 
-import httpx
-
 from src.clients.models import StockCurrentInfo
 from src.configs import TINKOFF_API_KEY
 from utils.http_client import AbstractHttpClient
@@ -52,7 +50,7 @@ class TinkoffInvestClient(AbstractStockClient):
         if units is None or nano is None:
             return None
 
-        price = units + nano * 0.000000001
+        price = float(units) + float(nano) * 0.000000001
 
         return StockCurrentInfo(
             ticker=ticker, name=stock_name, time=datetime.now(timezone.utc), price=price
