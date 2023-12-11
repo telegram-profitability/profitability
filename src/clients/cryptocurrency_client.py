@@ -3,46 +3,48 @@ from abc import abstractmethod
 from datetime import datetime
 from datetime import timezone
 
-from src.clients.models import CoinCurrentInfo
+import httpx
+
 from src.configs import CG_API_KEY
-from utils.http_client import AbstractHttpClient
 
 
 class AbstractCryptocurrencyClient(ABC):
+    _client = httpx.AsyncClient()
+
     @abstractmethod
-    async def get_coin_current_info(self, coin: str) -> CoinCurrentInfo | None:
+    async def get_coin_info(self, coin_id: str, date: str = None) -> dict | None:
         raise NotImplementedError()
+
+    async def _get(self, route: str, params: dict = None) -> dict | None:
+        response = await self._client.get(url=route, params=params)
+        return response.json() if response.status_code == 200 else None
 
 
 class CoinGeckoClient(AbstractCryptocurrencyClient):
-    def __init__(self, client: AbstractHttpClient) -> None:
+    def __init__(self) -> None:
         self._api_key = CG_API_KEY
-        self._client = client
+        self._client.base_url = "https://api.coingecko.com/api"
+        self._client.params = {"x_cg_api_key": self._api_key}
+        self._currency = "rub"
 
-    async def get_coin_current_info(self, coin: str) -> CoinCurrentInfo | None:
-        params = {
-            "vs_currencies": "rub",
-            "x_cg_api_key": self._api_key,
-        }
-        response = await self._client.get(
-            url=f"https://api.coingecko.com/api/v3/coins/{coin}", params=params
-        )
+    async def get_coin_info(self, coin_id: str, date: datetime = None) -> dict | None:
+        route = f"/v3/coins/{coin_id}" if date is None else f"/v3/coins/{coin_id}/history"
+        params = {} if date is None else {"date": date.strftime("%d-%m-%Y")}
+        response = await self._get(route=route, params=params)
         if response is None:
             return None
 
         all_prices = response.get("market_data", {}).get("current_price", {})
-        coin_id: str | None = response.get("id", None)
         symbol: str | None = response.get("symbol", None)
         name: str | None = response.get("name", None)
         price: str | None = all_prices.get("rub", None)
 
-        if any(i is None for i in [coin_id, symbol, name, price]):
+        if symbol is None or name is None or price is None:
             return None
 
-        return CoinCurrentInfo(
-            id=coin_id,
-            symbol=symbol,
-            name=name,
-            time=datetime.now(timezone.utc),
-            price=float(price),
-        )
+        return {
+            "symbol": symbol,
+            "name": name,
+            "time": datetime.now(timezone.utc) if date is None else date,
+            "price": float(price),
+        }

@@ -7,7 +7,7 @@ from utils.http_client import HttpClient
 
 async def main():
     http_client = HttpClient()
-    cg_client = CoinGeckoClient(http_client)
+    cg_client = CoinGeckoClient()
     ti_client = TinkoffInvestClient(http_client)
     print("Hello World!")
 
