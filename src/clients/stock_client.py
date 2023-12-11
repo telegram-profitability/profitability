@@ -7,6 +7,7 @@ import httpx
 
 from src.clients.models import StockCurrentInfo
 from src.configs import TINKOFF_API_KEY
+from utils.http_client import AbstractHttpClient
 
 
 class AbstractStockClient(ABC):
@@ -16,8 +17,9 @@ class AbstractStockClient(ABC):
 
 
 class TinkoffInvestClient(AbstractStockClient):
-    def __init__(self) -> None:
+    def __init__(self, client: AbstractHttpClient) -> None:
         self._api_key = TINKOFF_API_KEY
+        self._client = client
 
     async def get_stock_current_info(self, ticker: str) -> StockCurrentInfo | None:
         stock = await self._get_id_and_name_by_tiker(ticker)
@@ -31,20 +33,15 @@ class TinkoffInvestClient(AbstractStockClient):
             "accept": "application/json",
             "Content-Type": "application/json",
         }
-        response_json = None
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                headers=headers,
-                url="https://invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.MarketDataService/GetLastPrices",
-                json={"instrumentId": [stock_id]},
-            )
-            if response.status_code == 200:
-                response_json = response.json()
-
-        if response_json is None:
+        response = await self._client.post(
+            headers=headers,
+            url="https://invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.MarketDataService/GetLastPrices",
+            json={"instrumentId": [stock_id]},
+        )
+        if response is None:
             return None
 
-        prices = response_json.get("lastPrices", None)
+        prices: list | None = response.get("lastPrices", None)
         if prices is None:
             return None
 
@@ -67,24 +64,20 @@ class TinkoffInvestClient(AbstractStockClient):
             "accept": "application/json",
             "Content-Type": "application/json",
         }
-        response_json = None
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                headers=headers,
-                url="https://invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.InstrumentsService/FindInstrument",
-                json={
-                    "query": ticker,
-                    "instrumentKind": "INSTRUMENT_TYPE_SHARE",
-                    "apiTradeAvailableFlag": "true",
-                },
-            )
-            if response.status_code == 200:
-                response_json = response.json()
+        response = await self._client.post(
+            headers=headers,
+            url="https://invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.InstrumentsService/FindInstrument",
+            json={
+                "query": ticker,
+                "instrumentKind": "INSTRUMENT_TYPE_SHARE",
+                "apiTradeAvailableFlag": "true",
+            },
+        )
 
-        if response_json is None:
+        if response is None:
             return None
 
-        instruments = response_json.get("instruments", None)
+        instruments: list | None = response.get("instruments", None)
         if instruments is None or len(instruments) == 0:
             return None
 
