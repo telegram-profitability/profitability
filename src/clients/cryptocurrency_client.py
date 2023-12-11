@@ -11,7 +11,7 @@ from src.configs import CG_API_KEY
 
 class AbstractCryptocurrencyClient(ABC):
     @abstractmethod
-    async def get_stock_current_info(self, coin: str) -> CoinCurrentInfo | None:
+    async def get_coin_current_info(self, coin: str) -> CoinCurrentInfo | None:
         raise NotImplementedError()
 
 
@@ -19,7 +19,7 @@ class CoinGeckoClient(AbstractCryptocurrencyClient):
     def __init__(self) -> None:
         self.api_key = CG_API_KEY
 
-    async def get_stock_current_info(self, coin: str) -> CoinCurrentInfo | None:
+    async def get_coin_current_info(self, coin: str) -> CoinCurrentInfo | None:
         parameters = {
             "vs_currencies": "rub",
             "x_cg_api_key": self.api_key,
