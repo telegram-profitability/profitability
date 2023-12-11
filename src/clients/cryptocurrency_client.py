@@ -37,10 +37,10 @@ class CoinGeckoClient(AbstractCryptocurrencyClient):
             return None
 
         all_prices = response_json.get("market_data", {}).get("current_price", {})
-        coin_id = response_json.get("id")
-        symbol = response_json.get("symbol")
-        name = response_json.get("name")
-        price = all_prices.get("rub")
+        coin_id = response_json.get("id", None)
+        symbol = response_json.get("symbol", None)
+        name = response_json.get("name", None)
+        price = all_prices.get("rub", None)
 
         if any(i is None for i in [coin_id, symbol, name, price]):
             return None

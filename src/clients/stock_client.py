@@ -44,7 +44,7 @@ class TinkoffInvestClient(AbstractStockClient):
         if response_json is None:
             return None
 
-        prices = response_json.get("lastPrices")
+        prices = response_json.get("lastPrices", None)
         if prices is None:
             return None
 
@@ -84,12 +84,12 @@ class TinkoffInvestClient(AbstractStockClient):
         if response_json is None:
             return None
 
-        instruments = response_json.get("instruments")
+        instruments = response_json.get("instruments", None)
         if instruments is None or len(instruments) == 0:
             return None
 
-        ticker_id = instruments[0].get("uid")
-        name = instruments[0].get("name")
+        ticker_id = instruments[0].get("uid", None)
+        name = instruments[0].get("name", None)
 
         if ticker_id is None or name is None:
             return None
