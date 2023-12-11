@@ -1,5 +1,6 @@
 from abc import ABC
 from abc import abstractmethod
+from datetime import date
 from datetime import datetime
 from datetime import timezone
 
@@ -12,7 +13,7 @@ class AbstractCryptocurrencyClient(ABC):
     _client = httpx.AsyncClient()
 
     @abstractmethod
-    async def get_coin_info(self, coin_id: str, date: str = None) -> dict | None:
+    async def get_coin_info(self, coin_id: str, timestamp: date = None) -> dict | None:
         raise NotImplementedError()
 
     async def _get(self, route: str, params: dict = None) -> dict | None:
@@ -27,9 +28,9 @@ class CoinGeckoClient(AbstractCryptocurrencyClient):
         self._client.params = {"x_cg_api_key": self._api_key}
         self._currency = "rub"
 
-    async def get_coin_info(self, coin_id: str, date: datetime = None) -> dict | None:
-        route = f"/v3/coins/{coin_id}" if date is None else f"/v3/coins/{coin_id}/history"
-        params = {} if date is None else {"date": date.strftime("%d-%m-%Y")}
+    async def get_coin_info(self, coin_id: str, timestamp: date = None) -> dict | None:
+        route = f"/v3/coins/{coin_id}" if timestamp is None else f"/v3/coins/{coin_id}/history"
+        params = {} if timestamp is None else {"date": timestamp.strftime("%d-%m-%Y")}
         response = await self._get(route=route, params=params)
         if response is None:
             return None
@@ -45,6 +46,6 @@ class CoinGeckoClient(AbstractCryptocurrencyClient):
         return {
             "symbol": symbol,
             "name": name,
-            "time": datetime.now(timezone.utc) if date is None else date,
+            "timestamp": date.today() if timestamp is None else timestamp,
             "price": float(price),
         }
