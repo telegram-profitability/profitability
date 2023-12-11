@@ -5,8 +5,8 @@ from datetime import timezone
 
 import httpx
 
-from clients.models import CoinCurrentInfo
-from configs import CG_API_KEY
+from src.clients.models import CoinCurrentInfo
+from src.configs import CG_API_KEY
 
 
 class AbstractCryptocurrencyClient(ABC):
@@ -46,9 +46,5 @@ class CoinGeckoClient(AbstractCryptocurrencyClient):
             return None
 
         return CoinCurrentInfo(
-            id=coin_id,
-            symbol=symbol,
-            name=name,
-            time=datetime.now(timezone.utc),
-            price=price
+            id=coin_id, symbol=symbol, name=name, time=datetime.now(timezone.utc), price=price
         )
