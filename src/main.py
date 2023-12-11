@@ -1,5 +1,4 @@
 import asyncio
-from datetime import date
 
 from src.clients.cryptocurrency_client import CoinGeckoClient
 from src.clients.stock_client import TinkoffInvestClient
