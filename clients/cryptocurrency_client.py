@@ -1,16 +1,17 @@
 from abc import ABC
 from abc import abstractmethod
+from datetime import datetime
+from datetime import timezone
 
 import httpx
 
-from clients.models import CoinInfo
-from clients.models import CoinPrice
+from clients.models import CoinCurrentInfo
 from configs import CG_API_KEY
 
 
 class AbstractCryptocurrencyClient(ABC):
     @abstractmethod
-    async def get_coin_info(self, coin: str, currency: str = "rub") -> dict | None:
+    async def get_current_coin_info(self, coin: str) -> CoinCurrentInfo | None:
         raise NotImplementedError()
 
 
@@ -18,9 +19,9 @@ class CoinGeckoClient(AbstractCryptocurrencyClient):
     def __init__(self) -> None:
         self.api_key = CG_API_KEY
 
-    async def get_coin_info(self, coin: str, currency: str = "rub") -> CoinInfo | None:
+    async def get_current_coin_info(self, coin: str) -> CoinCurrentInfo | None:
         parameters = {
-            "vs_currencies": currency,
+            "vs_currencies": "rub",
             "x_cg_api_key": self.api_key,
         }
         response_json = None
@@ -39,18 +40,15 @@ class CoinGeckoClient(AbstractCryptocurrencyClient):
         coin_id = response_json.get("id")
         symbol = response_json.get("symbol")
         name = response_json.get("name")
-        usd_price = all_prices.get("usd")
-        selected_price = all_prices.get(currency)
+        price = all_prices.get("rub")
 
-        if any(i is None for i in [coin_id, symbol, name, usd_price, selected_price]):
+        if any(i is None for i in [coin_id, symbol, name, price]):
             return None
 
-        return CoinInfo(
+        return CoinCurrentInfo(
             id=coin_id,
             symbol=symbol,
             name=name,
-            prices=[
-                CoinPrice(currency="usd", price=usd_price),
-                CoinPrice(currency=currency, price=selected_price),
-            ],
+            time=datetime.now(timezone.utc),
+            price=price
         )

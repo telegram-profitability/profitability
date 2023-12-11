@@ -1,13 +1,11 @@
-from pydantic import BaseModel
+from dataclasses import dataclass
+from datetime import datetime
 
 
-class CoinPrice(BaseModel):
-    currency: str
-    price: float
-
-
-class CoinInfo(BaseModel):
+@dataclass(frozen=True)
+class CoinCurrentInfo:
     id: str
     symbol: str
     name: str
-    prices: list[CoinPrice]
+    time: datetime
+    price: float
