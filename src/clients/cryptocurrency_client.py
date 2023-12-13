@@ -35,7 +35,9 @@ class CoinGeckoClient(AbstractCryptocurrencyClient):
         logging.info("CoinGeckoClient initialized")
 
     async def get_coin_info(self, coin_id: str, timestamp: date = None) -> dict | None:
-        logging.info(f"Trying to fetch coin information by coin id '{coin_id}' and timestamp '{timestamp}'")
+        logging.info(
+            f"Trying to fetch coin information by coin id '{coin_id}' and timestamp '{timestamp}'"
+        )
         route = f"/v3/coins/{coin_id}" if timestamp is None else f"/v3/coins/{coin_id}/history"
         logging.info(f"Route '{route}' built")
         params = {} if timestamp is None else {"date": timestamp.strftime("%d-%m-%Y")}

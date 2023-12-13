@@ -61,10 +61,14 @@ class TinkoffInvestClient(AbstractStockClient):
             return None
 
         logging.info(f"Stock ID for ticker '{ticker}' is '{ticker_id}'")
-        logging.info(f"Trying to fetch stock information by ticker ID '{ticker_id}' and timestamp '{timestamp}'")
+        logging.info(
+            f"Trying to fetch stock information by ticker ID '{ticker_id}' and timestamp '{timestamp}'"
+        )
 
         if timestamp is None:
-            logging.info("No timestamp provided, building request to fetch current ticker information")
+            logging.info(
+                "No timestamp provided, building request to fetch current ticker information"
+            )
             route = "/tinkoff.public.invest.api.contract.v1.MarketDataService/GetLastPrices"
             json = {"instrumentId": [ticker_id]}
             prices_target = "lastPrices"

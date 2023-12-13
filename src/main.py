@@ -10,17 +10,19 @@ from src.clients.stock_client import TinkoffInvestClient
 
 
 async def main():
-    if not os.path.exists(f"./{TEMP_DIRECTORY_NAME}"):
-        os.makedirs(f"./{TEMP_DIRECTORY_NAME}")
+    temp_directory_path = f"./{TEMP_DIRECTORY_NAME}"
+    if not os.path.exists(temp_directory_path):
+        os.makedirs(temp_directory_path)
     logging.basicConfig(
         level=logging.INFO,
-        format="{timestamp=\"%(asctime)s\", log_level=\"%(levelname)s\", message=\"%(message)s\"}",
+        format='{timestamp="%(asctime)s", log_level="%(levelname)s", module="%(module)s", message="%(message)s"}',
         handlers=[
-            logging.FileHandler(f"./{TEMP_DIRECTORY_NAME}/{LOG_FILE_NAME}", mode="a"),
-            logging.StreamHandler(sys.stdout)
-        ]
+            logging.FileHandler(f"{temp_directory_path}/{LOG_FILE_NAME}", mode="a"),
+            logging.StreamHandler(sys.stdout),
+        ],
     )
 
+    logging.info("Initializing application")
     cg_client = CoinGeckoClient()
     ti_client = TinkoffInvestClient()
     logging.info("Running application")
