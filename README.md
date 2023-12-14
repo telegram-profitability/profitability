@@ -21,3 +21,10 @@
 ![ProfitabilityConcept2](https://github.com/telegram-profitability/profitability/assets/72651791/33221520-ba09-459d-b9fd-0dc5cca3acd9)
 
 ![ProfitabilityConcept3](https://github.com/telegram-profitability/profitability/assets/72651791/04470676-e26b-494f-a047-b593b01e9d75)
+
+## Docker
+
+1. `docker build -t profitability .`
+2. `docker run -e CG_API_KEY="..." <more env variables> --name profitability profitability`
+3. `docker pull postgres`
+4. `docker run -e POSTGRES_USER="..." -e POSTGRES_PASSWORD="..." -e POSTGRES_DB="..." -p 5432:5432 --name postgres postgres`

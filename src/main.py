@@ -8,6 +8,7 @@ from aiogram import Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
+from database.database import PostgresDatabase
 from src.configs import LOG_FILE_NAME
 from src.configs import TEMP_DIRECTORY_NAME
 from src.configs import TG_BOT_TOKEN
@@ -21,6 +22,8 @@ async def app() -> None:
 
     cg_client = CoinGeckoClient()
     ti_client = TinkoffInvestClient()
+    db = PostgresDatabase()
+    await db.init_ib()
 
     bot = Bot(token=TG_BOT_TOKEN, parse_mode=ParseMode.MARKDOWN_V2)
     dp = Dispatcher(storage=MemoryStorage())
