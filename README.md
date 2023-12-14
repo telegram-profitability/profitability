@@ -32,8 +32,9 @@
 
 ## Запуск проекта с помощью Docker'а
 
-1. Соберите проект `docker build -t profitability .`.
-2. Скачайте образ PostgreSQL `docker pull postgres`.
-3. Запустите контейнер с PostgreSQL `docker run -e POSTGRES_USER="..." -e POSTGRES_PASSWORD="..." -e POSTGRES_DB="..." -p 5432:5432 --name postgres postgres`.
-4. Запустите контейнер с проектом `docker run -e CG_API_KEY="..." <more env variables> --name profitability profitability`.
-5. Готово.
+1. Создайте сеть для контейнеров `docker network create main`.
+2. Соберите проект `docker build -t profitability .`.
+3. Скачайте образ PostgreSQL `docker pull postgres`.
+4. Запустите контейнер с PostgreSQL `docker run -d --name postgres -e POSTGRES_USER="postgres" -e POSTGRES_PASSWORD="postgres" -e POSTGRES_DB="main" -p 5432:5432 --network=main postgres:latest`.
+5. Запустите контейнер с проектом `docker run --name profitability -e CG_API_KEY="..." -e TG_BOT_TOKEN="..." -e TINKOFF_API_KEY="..." -e POSTGRES_HOST="postgres" -e POSTGRES_PORT="5432" --network=main profitability`.
+6. Готово.
