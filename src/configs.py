@@ -9,10 +9,10 @@ TINKOFF_API_KEY = os.getenv(
 )  # https://russianinvestments.github.io/investAPI/token/
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN", "")
 
-POSTGRES_USER = os.getenv("POSTGRES_USER", "")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "temporary")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
 
 # Base
