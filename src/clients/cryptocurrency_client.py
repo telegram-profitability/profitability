@@ -12,10 +12,10 @@ class AbstractCryptocurrencyClient(ABC):
     _client = httpx.AsyncClient()
 
     @abstractmethod
-    async def get_coin_info(self, coin_id: str, timestamp: date = None) -> dict | None:
+    async def get_coin_info(self, coin_id: str, timestamp: date | None = None) -> dict | None:
         raise NotImplementedError()
 
-    async def _get(self, route: str, params: dict = None) -> dict | None:
+    async def _get(self, route: str, params: dict | None = None) -> dict | None:
         logging.info("Sending GET request to cryptocurrency API")
         response = await self._client.get(url=route, params=params)
         logging.info("Response received")
@@ -29,12 +29,12 @@ class AbstractCryptocurrencyClient(ABC):
 class CoinGeckoClient(AbstractCryptocurrencyClient):
     def __init__(self) -> None:
         self._api_key = CG_API_KEY
-        self._client.base_url = "https://api.coingecko.com/api"
-        self._client.params = {"x_cg_api_key": self._api_key}
+        self._client.base_url = "https://api.coingecko.com/api"  # type: ignore
+        self._client.params = {"x_cg_api_key": self._api_key}  # type: ignore
         self._currency = "rub"
         logging.info("CoinGeckoClient initialized")
 
-    async def get_coin_info(self, coin_id: str, timestamp: date = None) -> dict | None:
+    async def get_coin_info(self, coin_id: str, timestamp: date | None = None) -> dict | None:
         logging.info(
             f"Trying to fetch coin information by coin id '{coin_id}' and timestamp '{timestamp}'"
         )

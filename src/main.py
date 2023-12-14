@@ -16,7 +16,7 @@ from src.clients.cryptocurrency_client import CoinGeckoClient
 from src.clients.stock_client import TinkoffInvestClient
 
 
-async def app():
+async def app() -> None:
     logging.info("Initializing application")
 
     cg_client = CoinGeckoClient()
@@ -31,7 +31,7 @@ async def app():
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
-def main():
+def main() -> None:
     temp_directory_path = f"./{TEMP_DIRECTORY_NAME}"
     if not os.path.exists(temp_directory_path):
         os.makedirs(temp_directory_path)

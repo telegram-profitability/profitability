@@ -3,6 +3,7 @@ from abc import abstractmethod
 from datetime import date
 from datetime import timedelta
 import logging
+from typing import Any
 
 import httpx
 
@@ -13,10 +14,10 @@ class AbstractStockClient(ABC):
     _client = httpx.AsyncClient()
 
     @abstractmethod
-    async def get_stock_info(self, coin: str, timestamp: date = None) -> dict | None:
+    async def get_stock_info(self, coin: str, timestamp: date | None = None) -> dict | None:
         raise NotImplementedError()
 
-    async def _post(self, route: str, json: dict = None) -> dict | None:
+    async def _post(self, route: str, json: dict | None = None) -> dict | None:
         logging.info("Sending POST request to cryptocurrency API")
         response = await self._client.post(url=route, json=json)
         logging.info("Response received")
@@ -30,11 +31,11 @@ class AbstractStockClient(ABC):
 class TinkoffInvestClient(AbstractStockClient):
     def __init__(self) -> None:
         self._api_key = TINKOFF_API_KEY
-        self._client.base_url = "https://invest-public-api.tinkoff.ru/rest"
-        self._client.headers = {"Authorization": f"Bearer {self._api_key}"}
+        self._client.base_url = "https://invest-public-api.tinkoff.ru/rest"  # type: ignore
+        self._client.headers = {"Authorization": f"Bearer {self._api_key}"}  # type: ignore
         logging.info("TinkoffInvestClient initialized")
 
-    async def get_stock_info(self, ticker: str, timestamp: date = None) -> dict | None:
+    async def get_stock_info(self, ticker: str, timestamp: date | None = None) -> dict | None:
         logging.info(f"Searching stock ID by ticker '{ticker}'")
         route = "/tinkoff.public.invest.api.contract.v1.InstrumentsService/FindInstrument"
         logging.info(f"Route '{route}' built")
@@ -70,7 +71,7 @@ class TinkoffInvestClient(AbstractStockClient):
                 "No timestamp provided, building request to fetch current ticker information"
             )
             route = "/tinkoff.public.invest.api.contract.v1.MarketDataService/GetLastPrices"
-            json = {"instrumentId": [ticker_id]}
+            json: dict[str, Any] = {"instrumentId": [ticker_id]}
             prices_target = "lastPrices"
             price_object_name = "price"
         else:
@@ -79,7 +80,7 @@ class TinkoffInvestClient(AbstractStockClient):
             from_date = f"{timestamp.strftime("%Y-%m-%d")}T00:00:00Z"
             to_timestamp = timestamp + timedelta(days=1)
             to_date = f"{to_timestamp.strftime("%Y-%m-%d")}T00:00:00Z"
-            json = {
+            json: dict[str, Any] = {
                 "from": from_date,
                 "to": to_date,
                 "interval": "CANDLE_INTERVAL_DAY",
