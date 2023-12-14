@@ -3,35 +3,26 @@ import logging
 import os
 import sys
 
-from aiogram import Bot
-from aiogram import Dispatcher
-from aiogram.enums import ParseMode
-from aiogram.fsm.storage.memory import MemoryStorage
-
-from database.database import PostgresDatabase
+from src.database.database import PostgresDatabase
 from src.configs import LOG_FILE_NAME
 from src.configs import TEMP_DIRECTORY_NAME
-from src.configs import TG_BOT_TOKEN
-from src.handlers import router
 from src.clients.cryptocurrency_client import CoinGeckoClient
 from src.clients.stock_client import TinkoffInvestClient
+from src.telegram_bot.telegram_bot import init_bot
+from src.telegram_bot.telegram_bot import run_bot
 
 
 async def app() -> None:
     logging.info("Initializing application")
-
     cg_client = CoinGeckoClient()
     ti_client = TinkoffInvestClient()
     db = PostgresDatabase()
-    await db.init_ib()
+    init_bot(cg_client, ti_client, db)
 
-    bot = Bot(token=TG_BOT_TOKEN, parse_mode=ParseMode.MARKDOWN_V2)
-    dp = Dispatcher(storage=MemoryStorage())
-    dp.include_router(router)
-    await bot.delete_webhook(drop_pending_updates=True)
-
+    logging.info("Creating database tables")
+    await db.create_tables()
     logging.info("Running application")
-    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    await run_bot()
 
 
 def main() -> None:
