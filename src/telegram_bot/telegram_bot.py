@@ -109,13 +109,14 @@ async def stats_handler(message: Message) -> None:
     for k, v in coin_stats.items():
         coin_result.append(f"  - {k.upper()}: {"+" if v >= 0 else ""}{v:.2f}")
 
-    result = []
+    stock_and_coin = []
     if len(stock_result) > 1:
-        result.extend(stock_result)
+        stock_and_coin.extend(stock_result)
     if len(coin_result) > 1:
-        result.extend(coin_result)
+        stock_and_coin.extend(coin_result)
 
-    await message.answer("\n".join(result))
+    result = "\n".join(stock_and_coin) if len(stock_and_coin) != 0 else texts.ADD_OPERATIONS
+    await message.answer(result)
 
 
 @_router.message(Command("stock"))
