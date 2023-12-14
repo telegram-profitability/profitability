@@ -14,7 +14,7 @@ class AbstractStockClient(ABC):
     _client = httpx.AsyncClient()
 
     @abstractmethod
-    async def get_stock_info(self, coin: str, timestamp: date | None = None) -> dict | None:
+    async def get_stock_info(self, ticker: str, timestamp: date | None = None) -> dict | None:
         raise NotImplementedError()
 
     async def _post(self, route: str, json: dict | None = None) -> dict | None:
@@ -110,7 +110,7 @@ class TinkoffInvestClient(AbstractStockClient):
 
         logging.info("Returning all fetched stock information")
         return {
-            "id": ticker_id,
+            "ticker": ticker,
             "name": ticker_name,
             "timestamp": date.today() if timestamp is None else timestamp,
             "price": price,

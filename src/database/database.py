@@ -2,7 +2,6 @@ from abc import ABC
 from abc import abstractmethod
 import logging
 from typing import Any
-from uuid import uuid4
 
 import asyncpg  # type: ignore
 
@@ -30,7 +29,7 @@ class AbstractDatabase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def get_all_investments(self, user_id: int) -> dict[str, list[dict[str, str]]]:
+    async def get_all_investments(self, user_id: int) -> dict[str, list[dict[str, Any]]]:
         raise NotImplementedError()
 
 
@@ -81,7 +80,7 @@ class PostgresDatabase(AbstractDatabase):
         logging.info("Adding user to database")
         connection = await asyncpg.connect(self._connection_string)
         await connection.execute(
-            """INSERT INTO "users"("id", "full_name") VALUES ($1, $2)""",
+            """INSERT INTO "users"("id", "full_name") VALUES ($1, $2) ON CONFLICT (id) DO NOTHING""",
             user["id"],
             user["full_name"],
         )
@@ -93,7 +92,7 @@ class PostgresDatabase(AbstractDatabase):
         connection = await asyncpg.connect(self._connection_string)
         await connection.execute(
             """INSERT INTO "stocks"(id, name, ticker, amount, price, timestamp, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)""",
-            uuid4(),
+            stock["id"],
             stock["name"],
             stock["ticker"],
             stock["amount"],
@@ -109,7 +108,7 @@ class PostgresDatabase(AbstractDatabase):
         connection = await asyncpg.connect(self._connection_string)
         await connection.execute(
             """INSERT INTO "coins"(id, name, ticker, amount, price, timestamp, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)""",
-            uuid4(),
+            coin["id"],
             coin["name"],
             coin["symbol"],
             coin["amount"],
@@ -120,7 +119,7 @@ class PostgresDatabase(AbstractDatabase):
         await connection.close()
         logging.info("Coin added to database")
 
-    async def get_all_investments(self, user_id: int) -> dict[str, list[dict[str, str]]]:
+    async def get_all_investments(self, user_id: int) -> dict[str, list[dict[str, Any]]]:
         logging.info(f"Getting all stocks and coins of user with ID {user_id}")
         connection = await asyncpg.connect(self._connection_string)
         stocks_records = await connection.fetch(
