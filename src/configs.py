@@ -11,9 +11,9 @@ TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN", "")
 
 POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "temporary")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "main")
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5433")
 
 # Base
 
