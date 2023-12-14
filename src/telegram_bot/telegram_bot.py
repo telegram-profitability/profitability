@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import Bot
 from aiogram import Dispatcher
 from aiogram import Router
@@ -30,9 +32,11 @@ def init_bot(
     _cryptocurrency_client = cryptocurrency_client
     _stock_client = stock_client
     _db = db
+    logging.info("Telegram bot initialized")
 
 
 async def run_bot() -> None:
+    logging.info("Telegram bot run method called")
     await _db.create_tables()  # type: ignore
     await _bot.delete_webhook(drop_pending_updates=True)
     await _dp.start_polling()
