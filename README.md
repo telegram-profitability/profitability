@@ -22,9 +22,18 @@
 
 ![ProfitabilityConcept3](https://github.com/telegram-profitability/profitability/assets/72651791/04470676-e26b-494f-a047-b593b01e9d75)
 
-## Docker
+## Запуск проекта
 
-1. `docker build -t profitability .`
-2. `docker run -e CG_API_KEY="..." <more env variables> --name profitability profitability`
-3. `docker pull postgres`
-4. `docker run -e POSTGRES_USER="..." -e POSTGRES_PASSWORD="..." -e POSTGRES_DB="..." -p 5432:5432 --name postgres postgres`
+1. Установите зависимости с помощью `pip install -r requirements.txt`.
+2. Установите значения в переменные окружения. Названия переменных можно найти в `src/configs.py`.
+   - На Windows это можно сделать с помощью `$Env:<key>="<value>"`. 
+3. Запустите проект `python -m src.main`.
+4. Готово.
+
+## Запуск проекта с помощью Docker'а
+
+1. Соберите проект `docker build -t profitability .`.
+2. Скачайте образ PostgreSQL `docker pull postgres`.
+3. Запустите контейнер с PostgreSQL `docker run -e POSTGRES_USER="..." -e POSTGRES_PASSWORD="..." -e POSTGRES_DB="..." -p 5432:5432 --name postgres postgres`.
+4. Запустите контейнер с проектом `docker run -e CG_API_KEY="..." <more env variables> --name profitability profitability`.
+5. Готово.
