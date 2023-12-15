@@ -22,6 +22,10 @@
 
 ![ProfitabilityConcept3](https://github.com/telegram-profitability/profitability/assets/72651791/04470676-e26b-494f-a047-b593b01e9d75)
 
+## Архитектура
+
+![Architecture](static/architecture.png)
+
 ## Запуск проекта
 
 1. Установите зависимости с помощью `pip install -r requirements.txt`.
