@@ -194,11 +194,11 @@ async def stats_handler(message: Message) -> None:
 
     stock_result = ["📑 Ценные бумаги"]
     for k, v in stock_stats.items():
-        stock_result.append(f"  - {k.upper()}: {'+' if v >= 0 else ''}{v:.2f}")
+        stock_result.append(f"  - {k.upper()}: {'+' if v >= 0 else ''}{v:.2f} RUB")
 
     coin_result = ["🪙 Криптовалюта"]
     for k, v in coin_stats.items():
-        coin_result.append(f"  - {k.upper()}: {'+' if v >= 0 else ''}{v:.2f}")
+        coin_result.append(f"  - {k.upper()}: {'+' if v >= 0 else ''}{v:.2f} RUB")
 
     stock_and_coin = []
     if len(stock_result) > 1:
