@@ -7,7 +7,7 @@ from aiogram import Router
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import Message
+from aiogram.types import *
 
 from src.clients.cryptocurrency_client import AbstractCryptocurrencyClient
 from src.clients.stock_client import AbstractStockClient
@@ -27,10 +27,13 @@ _dp = Dispatcher(storage=MemoryStorage())
 _dp.include_router(_router)
 
 
+# user_data = {}
+
+
 def init_bot(
-    cryptocurrency_client: AbstractCryptocurrencyClient,
-    stock_client: AbstractStockClient,
-    db: AbstractDatabase,
+        cryptocurrency_client: AbstractCryptocurrencyClient,
+        stock_client: AbstractStockClient,
+        db: AbstractDatabase,
 ) -> None:
     global _cryptocurrency_client, _stock_client, _db
     _cryptocurrency_client = cryptocurrency_client
@@ -44,18 +47,106 @@ async def run_bot() -> None:
     await _db.create_tables()  # type: ignore
     await _bot.delete_webhook(drop_pending_updates=True)
     await _dp.start_polling(_bot)
+    await Bot.set_my_commands(self=_bot,
+                              commands=[BotCommand(command='stats', description='📊 Просмотр своего портфеля'),
+                                        BotCommand(command='add', description='➕ Добавить покупку или продажу'),
+                                        BotCommand(command='help', description='❔ Помощь')])
 
 
-@_router.message(Command("start", "help"))
+@_router.message(Command("start"))
 async def start_handler(message: Message) -> None:
     await message.answer(texts.START_TEXT)
 
+
+@_dp.message(Command("help"))
+async def start_handler(message: Message) -> None:
+    await message.reply(texts.HELP_TEXT)
+
+
+@_dp.message(Command("add"))
+async def add_new_item(message: Message) -> None:
+    add_stock_button = InlineKeyboardButton(text='Ценной бумаги', callback_data='stock')
+    add_cryptocurrency_button = InlineKeyboardButton(text='Криптовалюты', callback_data='crypto')
+    inline_keyboard = InlineKeyboardMarkup(inline_keyboard=[[add_stock_button, add_cryptocurrency_button]])
+    await message.answer('➕ Добавить покупку или продажу...', reply_markup=inline_keyboard)
+
+
+@_dp.callback_query(lambda query: query.data in ['stock', 'crypto'])
+async def process_adding_new_item(callback_query: CallbackQuery) -> None:
+    await callback_query.answer()
+    chosen_option = callback_query.data
+    if chosen_option == 'stock':
+        # user_data[callback_query.from_user.id] = {'chosen_option': 'add_stock'}
+        await _bot.send_message(callback_query.from_user.id, texts.ADD_STOCK_TEXT, parse_mode='MarkdownV2')
+    elif chosen_option == 'crypto':
+        # user_data[callback_query.from_user.id] = {'chosen_option': 'add_crypto'}
+        await _bot.send_message(callback_query.from_user.id, texts.ADD_CRYPTO_TEXT, parse_mode='MarkdownV2')
+
+
+# @_dp.message(lambda message: message.from_user.id in user_data and user_data[message.from_user.id]['chosen_option'] == 'add_crypto')
+# async def process_adding_new_crypto(message: Message) -> None:
+#     cryptocurrency_input = message.text
+#     if not cryptocurrency_input.isalpha():
+#         await message.reply(ERROR_TEXT)
+#         return
+#     cryptocurrency = cryptocurrency_input.lower()
+#     user_data[message.from_user.id]['add_cryptocurrency'] = cryptocurrency
+#     await message.reply("Введи количество купленной валюты (например, 3.2).\nЕсли ты продал валюту, значение должно быть отрицательным (например, -1)")
+#
+#
+# @_dp.message(lambda message: message.from_user.id in user_data and 'add_cryptocurrency' in user_data[message.from_user.id])
+# async def process_adding_new_crypto_amount(message: Message) -> None:
+#     cryptocurrency_amount_input = message.text
+#     cryptocurrency_amount = to_float(cryptocurrency_amount_input)
+#     if cryptocurrency_amount is None:
+#         await message.reply(ERROR_TEXT)
+#         return
+#     user_data[message.from_user.id]['add_cryptocurrency_amount'] = cryptocurrency_amount
+#     await message.reply(
+#         "Введи дату покупки или продажи в формате DD-MM-YYYY (например, 12-11-2020).\nЕсли операция была сделана сегодня, можно ответить «Сегодня»")
+#
+#
+# @_dp.message(lambda message: message.from_user.id in user_data and 'add_cryptocurrency_amount' in user_data[message.from_user.id])
+# async def process_adding_new_crypto_date(message: Message) -> None:
+#     cryptocurrency_date_input = message.text
+#     if cryptocurrency_date_input == 'Сегодня':
+#         cryptocurrency_date = None
+#     else:
+#         cryptocurrency_date = to_date(cryptocurrency_date_input)
+#         if cryptocurrency_date is None:
+#             await message.reply(ERROR_TEXT)
+#             return
+#     message_user = message.from_user
+#     if message_user is None:
+#         await message.reply(texts.USER_FETCH_ERROR_TEXT)
+#         return
+#
+#     user = {"id": message_user.id, "full_name": message_user.full_name}
+#     await _db.add_user(user)
+#     coin_id = user_data[message.from_user.id]['add_cryptocurrency']
+#     amount = user_data[message.from_user.id]['add_cryptocurrency_amount']
+#     timestamp = cryptocurrency_date
+#     coin = await _cryptocurrency_client.get_coin_info(coin_id, timestamp)
+#     if coin is None:
+#         await message.reply(texts.OPERATION_ERROR_TEXT)
+#         return
+#
+#     coin_entity = {
+#         "id": uuid4(),
+#         "name": coin["name"],
+#         "symbol": coin_id,
+#         "amount": amount,
+#         "price": coin["price"],
+#         "timestamp": coin["timestamp"],
+#     }
+#     await _db.add_coin(coin_entity, message_user.id)
+#     await message.reply(texts.OPERATION_COMPLETED_TEXT)
 
 @_router.message(Command("stats"))
 async def stats_handler(message: Message) -> None:
     message_user = message.from_user
     if message_user is None:
-        await message.answer(texts.USER_FETCH_ERROR_TEXT)
+        await message.reply(texts.USER_FETCH_ERROR_TEXT)
         return
 
     user = {"id": message_user.id, "full_name": message_user.full_name}
@@ -101,13 +192,13 @@ async def stats_handler(message: Message) -> None:
         profit_loss = current_value - initial_investment
         coin_stats[ticker] += profit_loss
 
-    stock_result = ["Stock:"]
+    stock_result = ["📑 Ценные бумаги"]
     for k, v in stock_stats.items():
-        stock_result.append(f"  - {k.upper()}: {"+" if v >= 0 else ""}{v:.2f}")
+        stock_result.append(f"  - {k.upper()}: {'+' if v >= 0 else ''}{v:.2f}")
 
-    coin_result = ["Coin:"]
+    coin_result = ["🪙 Криптовалюта"]
     for k, v in coin_stats.items():
-        coin_result.append(f"  - {k.upper()}: {"+" if v >= 0 else ""}{v:.2f}")
+        coin_result.append(f"  - {k.upper()}: {'+' if v >= 0 else ''}{v:.2f}")
 
     stock_and_coin = []
     if len(stock_result) > 1:
@@ -116,29 +207,30 @@ async def stats_handler(message: Message) -> None:
         stock_and_coin.extend(coin_result)
 
     result = "\n".join(stock_and_coin) if len(stock_and_coin) != 0 else texts.ADD_OPERATIONS
-    await message.answer(result)
+    result_message = f"📊 Твой портфель:\n\n{result}"
+    await message.reply(result_message)
 
 
 @_router.message(Command("stock"))
 async def stock_handler(message: Message, command: Command) -> None:
     command_args = command.args  # type: ignore
     if command_args is None:
-        await message.answer(ERROR_TEXT)
+        await message.reply(ERROR_TEXT)
         return
     args = command_args.split()
     if len(args) not in [2, 3]:
-        await message.answer(ERROR_TEXT)
+        await message.reply(ERROR_TEXT)
         return
 
     ticker = args[0]
     if not ticker.isalpha():
-        await message.answer(ERROR_TEXT)
+        await message.reply(ERROR_TEXT)
         return
     ticker = ticker.lower()
 
     amount = to_float(args[1])
     if amount is None:
-        await message.answer(ERROR_TEXT)
+        await message.reply(ERROR_TEXT)
         return
 
     if len(args) != 3:
@@ -146,12 +238,12 @@ async def stock_handler(message: Message, command: Command) -> None:
     else:
         timestamp = to_date(args[2])
         if timestamp is None:
-            await message.answer(ERROR_TEXT)
+            await message.reply(ERROR_TEXT)
             return
 
     message_user = message.from_user
     if message_user is None:
-        await message.answer(texts.USER_FETCH_ERROR_TEXT)
+        await message.reply(texts.USER_FETCH_ERROR_TEXT)
         return
 
     user = {"id": message_user.id, "full_name": message_user.full_name}
@@ -159,7 +251,7 @@ async def stock_handler(message: Message, command: Command) -> None:
 
     stock = await _stock_client.get_stock_info(ticker, timestamp)
     if stock is None:
-        await message.answer(texts.OPERATION_ERROR_TEXT)
+        await message.reply(texts.OPERATION_ERROR_TEXT)
         return
 
     stock_entity = {
@@ -171,29 +263,29 @@ async def stock_handler(message: Message, command: Command) -> None:
         "timestamp": stock["timestamp"],
     }
     await _db.add_stock(stock_entity, message_user.id)
-    await message.answer(texts.OPERATION_COMPLETED_TEXT)
+    await message.reply(texts.OPERATION_COMPLETED_TEXT)
 
 
 @_router.message(Command("coin"))
 async def coin_handler(message: Message, command: Command) -> None:
     command_args = command.args  # type: ignore
     if command_args is None:
-        await message.answer(ERROR_TEXT)
+        await message.reply(ERROR_TEXT)
         return
     args = command_args.split()
     if len(args) not in [2, 3]:
-        await message.answer(ERROR_TEXT)
+        await message.reply(ERROR_TEXT)
         return
 
     coin_id = args[0]
     if not coin_id.isalpha():
-        await message.answer(ERROR_TEXT)
+        await message.reply(ERROR_TEXT)
         return
     coin_id = coin_id.lower()
 
     amount = to_float(args[1])
     if amount is None:
-        await message.answer(ERROR_TEXT)
+        await message.reply(ERROR_TEXT)
         return
 
     if len(args) != 3:
@@ -201,12 +293,12 @@ async def coin_handler(message: Message, command: Command) -> None:
     else:
         timestamp = to_date(args[2])
         if timestamp is None:
-            await message.answer(ERROR_TEXT)
+            await message.reply(ERROR_TEXT)
             return
 
     message_user = message.from_user
     if message_user is None:
-        await message.answer(texts.USER_FETCH_ERROR_TEXT)
+        await message.reply(texts.USER_FETCH_ERROR_TEXT)
         return
 
     user = {"id": message_user.id, "full_name": message_user.full_name}
@@ -214,7 +306,7 @@ async def coin_handler(message: Message, command: Command) -> None:
 
     coin = await _cryptocurrency_client.get_coin_info(coin_id, timestamp)
     if coin is None:
-        await message.answer(texts.OPERATION_ERROR_TEXT)
+        await message.reply(texts.OPERATION_ERROR_TEXT)
         return
 
     coin_entity = {
@@ -226,9 +318,9 @@ async def coin_handler(message: Message, command: Command) -> None:
         "timestamp": coin["timestamp"],
     }
     await _db.add_coin(coin_entity, message_user.id)
-    await message.answer(texts.OPERATION_COMPLETED_TEXT)
+    await message.reply(texts.OPERATION_COMPLETED_TEXT)
 
 
 @_router.message()
 async def message_handler(message: Message) -> None:
-    await message.answer(ERROR_TEXT)
+    await message.reply(ERROR_TEXT)

@@ -77,9 +77,9 @@ class TinkoffInvestClient(AbstractStockClient):
         else:
             logging.info("Timestamp provided, building request to fetch ticker information by date")
             route = "/tinkoff.public.invest.api.contract.v1.MarketDataService/GetCandles"
-            from_date = f"{timestamp.strftime("%Y-%m-%d")}T00:00:00Z"
+            from_date = f"{timestamp.strftime('%Y-%m-%d')}T00:00:00Z"
             to_timestamp = timestamp + timedelta(days=1)
-            to_date = f"{to_timestamp.strftime("%Y-%m-%d")}T00:00:00Z"
+            to_date = f"{to_timestamp.strftime('%Y-%m-%d')}T00:00:00Z"
             json: dict[str, Any] = {
                 "from": from_date,
                 "to": to_date,
